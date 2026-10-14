@@ -1,125 +1,83 @@
-
 # ProcureShield AI 🛡️
 
-### Autonomous Procurement Exception Resolution
+### Procurement Invoice Exception Resolution Prototype
 
-**Detect. Decide. Act. Verify. Automatically.**
+**Detect. Decide. Record. Verify.**
 
-ProcureShield AI is a prototype system designed to identify procurement invoice exceptions, calculate risk scores, recommend decisions, record simulated actions, and verify that those actions have been logged.
+ProcureShield AI is a Python prototype that compares procurement invoices with purchase orders and delivery records, applies transparent rule-based risk scoring, recommends a next action, records simulated actions, and checks the resulting database records.
 
-Traditional invoice-processing workflows often require procurement teams to manually compare invoices against purchase orders and delivery records. ProcureShield demonstrates how rule-based detection and an auditable decision workflow can help streamline this process.
+![ProcureShield AI dashboard](assets/procureshield-dashboard.png)
 
-## 🚀 Key Features
+*Screenshot of the running local Streamlit prototype. Actions shown in the application are simulated; no real payment system is connected.*
 
-- **Invoice analysis:** Compares invoice quantities and unit prices against purchase orders.
-- **Exception detection:** Identifies quantity mismatches, price mismatches, missing delivery receipts, unverified receipts, and received-quantity discrepancies.
-- **Risk scoring:** Calculates a weighted risk score from 0 to 100.
-- **Risk classification:** Classifies invoices as LOW, MEDIUM, HIGH, or CRITICAL.
-- **Decision engine:** Recommends actions such as HOLD_PAYMENT, REQUEST_EVIDENCE, ESCALATE, or APPROVE.
-- **Simulated action execution:** Records proposed actions in a SQLite database without affecting real payments.
-- **Audit trail:** Stores action events for traceability.
-- **Action verification:** Checks whether simulated actions have been recorded.
-- **Interactive dashboard:** Uses Streamlit to display invoice details, risk scores, detected anomalies, decisions, and verification results.
-- **Demo dataset:** Includes sample vendors, purchase orders, invoices, and delivery receipts.
+## What it currently does
 
-## 🧠 How It Works
+- Reads invoice, purchase-order, vendor, and delivery-receipt data from SQLite.
+- Detects quantity mismatches, price mismatches, missing receipts, unverified receipts, received-quantity mismatches, and a simple vendor-risk threshold.
+- Calculates a weighted heuristic risk score from 0 to 100 and classifies the score as LOW, MEDIUM, HIGH, or CRITICAL.
+- Recommends a decision using deterministic rules: `APPROVE`, `HOLD_PAYMENT`, `REQUEST_EVIDENCE`, or `ESCALATE`.
+- Records simulated actions and audit events in SQLite.
+- Checks whether simulated action records are present.
+- Provides a Streamlit dashboard to analyse demo invoices and view decisions and action-verification results.
 
-1. **Receive:** Select an invoice from the available demo dataset.
-2. **Investigate:** Retrieve related purchase order, vendor, and delivery receipt data.
-3. **Detect:** Run configured anomaly checks.
-4. **Score:** Calculate a weighted risk score.
-5. **Decide:** Apply decision rules to recommend an action.
-6. **Act:** Record simulated actions and audit events.
-7. **Verify:** Confirm that the expected action records exist in the database.
+## Current limitations
 
-## 🏗️ Architecture
+- This is a prototype, not a production procurement or financial system.
+- The risk score is a weighted rule-based heuristic, not a trained model or a calibrated probability of fraud.
+- Duplicate-invoice detection is not implemented yet; its current flag is always false.
+- Actions are simulated. The prototype does not actually hold/release payments or send vendor messages.
+- Verification checks local database records, not an external payment, ERP, or email system.
+- Authentication, role-based access control, migration management, and production deployment hardening are not implemented.
+- The included examples are synthetic demo data, not real supplier or customer records.
 
-```text
-Invoice and Procurement Records
-              |
-              v
-       Detection Engine
-              |
-              v
-        Risk Scoring
-              |
-              v
-        Decision Agent
-              |
-              v
-      Simulated Actions
-              |
-              v
-       SQLite Database
-              |
-              v
-      Action Verification
-              |
-              v
-          Audit Trail
+## Technology stack
 
-      Streamlit Dashboard
-     Displays the workflow
-```
+- Python
+- SQLite (Python standard library)
+- Streamlit
+- Git and GitHub
 
-## 🛠️ Technology Stack
+`requirements.txt` lists the dashboard's direct runtime dependency. SQLite support comes with Python and does not need a separate package.
 
-| Technology | Purpose |
-|---|---|
-| Python | Core application logic |
-| SQLite | Local database and audit records |
-| Streamlit | Interactive dashboard |
-| Pandas | Data handling dependency |
-| scikit-learn | Machine learning dependency for planned extensions |
-| FastAPI | API framework dependency for planned extensions |
-| Pydantic | Data validation dependency |
-| PyMuPDF | PDF processing dependency for planned extensions |
-
-The current working prototype primarily uses Python, SQLite, and Streamlit. A dependency being installed does not mean that its planned integration is already implemented.
-
-## 📂 Project Structure
+## Project structure
 
 ```text
 procureshield-ai/
 ├── app/
+│   ├── __init__.py
 │   ├── database/
+│   │   ├── __init__.py
 │   │   ├── db.py
 │   │   ├── check_db.py
-│   │   ├── check_invoice.py
-│   │   └── seed_data.py
+│   │   └── check_invoice.py
 │   └── services/
+│       ├── __init__.py
 │       ├── detection_engine.py
 │       ├── test_detection.py
 │       ├── decision_agent.py
 │       ├── action_executor.py
-│       └── verify_actions.py
+│       ├── verify_actions.py
+│       └── seed_data.py
+├── assets/
+│   └── procureshield-dashboard.png
 ├── dashboard/
 │   └── app.py
-├── data/
+├── data/                 # local SQLite file is generated here
 ├── requirements.txt
-├── README.md
-└── .gitignore
+├── .gitignore
+└── README.md
 ```
 
-## ⚙️ Getting Started
-
-### Prerequisites
-
-- Python installed
-- Git installed
-- A terminal such as PowerShell
-- Visual Studio Code (recommended)
+## Run locally (Windows PowerShell)
 
 ### 1. Clone the repository
 
-```bash
-git clone https://github.com/sglovesscoffee/procureshield-ai.git
+```powershell
+git clone https://github.com/sglovescoffee/procureshield-ai.git
 cd procureshield-ai
 ```
 
 ### 2. Create and activate a virtual environment
-
-On Windows PowerShell:
 
 ```powershell
 python -m venv .venv
@@ -132,106 +90,65 @@ python -m venv .venv
 python -m pip install -r requirements.txt
 ```
 
-If Streamlit is missing from the dependency file, add `streamlit` to `requirements.txt` and reinstall.
-
-### 4. Initialise the database
+### 4. Initialise the database and load the demo data
 
 ```powershell
 python -m app.database.db
-```
-
-If this command does not initialise the database in your version, run the project's database initialisation entry point as configured in `app/database/db.py`.
-
-### 5. Seed the demo data
-
-```powershell
 python -m app.services.seed_data
 ```
 
-Run the seed step only when appropriate for your database state; do not assume repeated seeding is safe.
+**Warning:** `seed_data.py` clears and recreates the prototype's demo rows in the local tables. Run it only when you are comfortable resetting your local demo data.
 
-### 6. Launch the dashboard
+### 5. Start the dashboard
 
 ```powershell
 python -m streamlit run dashboard/app.py
 ```
 
-Open the local URL displayed in the terminal, usually:
+Open the local URL shown in the terminal, typically `http://localhost:8501`.
 
-`http://localhost:8501`
+## Demo scenario: `INV-1098`
 
-## 🧪 Demo Scenario
+The seeded demonstration invoice intentionally differs from its purchase order:
 
-The main demonstration uses invoice `INV-1098`.
+| Field | Purchase order | Invoice |
+|---|---:|---:|
+| Quantity | 100 | 118 |
+| Unit price | ₹1,250 | ₹1,420 |
 
-Sample values:
+The corresponding delivery receipt is intentionally missing. With the current weights, these three signals produce a score of `70/100`, classified as `HIGH`. The rule-based decision is `HOLD_PAYMENT`; because the receipt is missing, the simulated workflow also records `REQUEST_EVIDENCE`.
 
-- Invoice quantity: 118
-- Purchase order quantity: 100
-- Invoice unit price: ₹1,420
-- Purchase order unit price: ₹1,250
-- Delivery receipt: Missing
+These are configured demo rules, not evidence that the invoice is fraudulent.
 
-Expected prototype result:
-
-- Quantity mismatch: Detected
-- Price mismatch: Detected
-- Missing delivery receipt: Detected
-- Risk score: 70/100
-- Risk level: HIGH
-- Recommended decision: HOLD_PAYMENT
-- Simulated actions: HOLD_PAYMENT and REQUEST_EVIDENCE
-
-The database records simulated actions and audit events. The verification function checks the recorded action state.
-
-## 📊 Risk Scoring
-
-The prototype uses configurable heuristic weights:
+## Risk scoring used by the prototype
 
 | Signal | Weight |
 |---|---:|
-| Quantity mismatch | 25 |
+| Quantity mismatch | 25 | 
 | Price mismatch | 25 |
 | Missing or inconsistent delivery evidence | 20 |
-| Duplicate invoice | 20 |
-| Vendor anomaly | 10 |
-| **Maximum score** | **100** |
+| Duplicate invoice | 20 (reserved; duplicate check not implemented) |
+| Vendor risk threshold | 10 |
 
-Risk bands:
+Risk bands: `LOW` = 0–25, `MEDIUM` = 26–50, `HIGH` = 51–75, `CRITICAL` = 76–100.
 
-- LOW: 0–25
-- MEDIUM: 26–50
-- HIGH: 51–75
-- CRITICAL: 76–100
+## Privacy, credentials, and local data
 
-These weights and thresholds are demonstration heuristics, not a validated fraud-detection model. The current duplicate-invoice check is limited by the database schema and requires further development.
+- Do not commit `.env`, `.env.*`, API keys, passwords, or credential files.
+- `.gitignore` excludes environment files, Streamlit secrets, local virtual environments, and local SQLite database files.
+- The application creates `data/procureshield.db` locally after setup. The database should be generated from the seed script rather than committed as a binary artifact.
+- Use synthetic sample data only. Do not add actual vendor invoices, customer information, or confidential company records to this public repository.
+- If a real secret was committed in the past, removing it from the latest version is not sufficient: revoke/rotate it and assess repository history before sharing further.
 
-## 🔐 Safety and Limitations
+## Future improvements
 
-- All actions are simulated.
-- No real payment is approved, held, or released.
-- No actual vendor email or evidence request is sent.
-- Verification checks local database records, not an external financial system.
-- Risk scores are rule-based and have not been calibrated against real procurement outcomes.
-- The demo data is synthetic and must not be treated as evidence of real-world accuracy.
-- Human review would be required before any production financial action.
-- Production deployment would require authentication, access control, secure secrets management, stronger duplicate detection, monitoring, and integration testing.
+- Implement duplicate and near-duplicate invoice detection.
+- Add automated tests with assertions and regression coverage.
+- Model policy thresholds and receipt/partial-delivery cases explicitly.
+- Improve database constraints, transaction handling, and action idempotency.
+- Validate verification against expected action outcomes and, in a future integration, external-system responses.
+- Add authentication, access controls, and operational monitoring before any production use.
 
-## 🗺️ Future Scope
+## Project goal
 
-- PDF invoice extraction
-- Stronger duplicate and near-duplicate detection
-- ML-assisted anomaly scoring
-- LLM-generated explanations using structured outputs
-- Human approval workflows
-- Procurement-system integrations
-- Email or ticketing automation
-- External-system verification
-- Authentication and role-based access control
-- Comprehensive automated testing
-
-## 🎯 Project Goal
-
-ProcureShield AI aims to demonstrate a closed-loop approach to procurement exception handling: identifying an issue, recommending a decision, recording the action, and verifying the resulting system state.
-
-**ProcureShield AI — More than detecting exceptions. A prototype for resolving them.**
+ProcureShield AI explores how a transparent, auditable workflow can assist procurement teams with invoice exception triage. The current project is an early prototype intended for learning, experimentation, and further engineering.

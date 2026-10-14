@@ -218,3 +218,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Ignore environment-specific credential files, except an explicitly safe template.
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+
+# The SQLite database is generated locally from synthetic seed data.
+data/*.db
+data/*.sqlite
+data/*.sqlite3
+
+
